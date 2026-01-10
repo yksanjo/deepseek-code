@@ -12,6 +12,7 @@ from rich.theme import Theme
 from rich.text import Text
 from rich.live import Live
 from rich.spinner import Spinner
+from rich.align import Align
 
 
 # Custom theme
@@ -22,17 +23,72 @@ THEME = Theme({
     "success": "green",
     "tool": "blue",
     "path": "magenta",
+    "logo": "bold cyan",
+    "logo.accent": "bold blue",
 })
 
 console = Console(theme=THEME)
 
 
+# ASCII Art Logo
+LOGO = r"""
+[bold cyan]  ____                 ____            _       [/bold cyan]
+[bold cyan] |  _ \  ___  ___ _ __/ ___|  ___  ___| | __   [/bold cyan]
+[bold cyan] | | | |/ _ \/ _ \ '_ \___ \ / _ \/ _ \ |/ /   [/bold cyan]
+[bold cyan] | |_| |  __/  __/ |_) |__) |  __/  __/   <    [/bold cyan]
+[bold cyan] |____/ \___|\___| .__/____/ \___|\___|_|\_\   [/bold cyan]
+[bold blue]   ____          |_|  _                        [/bold blue]
+[bold blue]  / ___|___   __| | ___                        [/bold blue]
+[bold blue] | |   / _ \ / _` |/ _ \                       [/bold blue]
+[bold blue] | |__| (_) | (_| |  __/                       [/bold blue]
+[bold blue]  \____\___/ \__,_|\___|                       [/bold blue]
+"""
+
+LOGO_SMALL = r"""
+[bold cyan]╔═══════════════════════════════════════╗[/bold cyan]
+[bold cyan]║[/bold cyan]  [bold white]DeepSeek Code[/bold white] [dim]- AI Coding Assistant[/dim]  [bold cyan]║[/bold cyan]
+[bold cyan]╚═══════════════════════════════════════╝[/bold cyan]
+"""
+
+LOGO_MINIMAL = r"""
+[bold cyan]▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄[/bold cyan]
+[bold cyan]█[/bold cyan] [bold white]⚡ DeepSeek Code[/bold white]                        [bold cyan]█[/bold cyan]
+[bold cyan]█[/bold cyan] [dim]AI-powered coding assistant[/dim]            [bold cyan]█[/bold cyan]
+[bold cyan]▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀[/bold cyan]
+"""
+
+FISH_LOGO = r"""
+[bold cyan]        ___[/bold cyan]
+[bold cyan]      /`   `'.[/bold cyan]
+[bold blue]     /  _ _   \[/bold blue]    [bold white]DeepSeek Code[/bold white]
+[bold blue]    | (@)(@)   |[/bold blue]   [dim]v{version}[/dim]
+[bold cyan]    |    >    |[/bold cyan]
+[bold cyan]     \  .__,  /[/bold cyan]    [dim]AI Coding Assistant[/dim]
+[bold blue]      '.___.'[/bold blue]
+"""
+
+
+def print_banner(version: str) -> None:
+    """Print the ASCII art banner."""
+    console.print()
+    console.print(LOGO)
+    console.print(f"                    [dim]v{version}[/dim]")
+    console.print()
+
+
 def print_welcome(version: str, working_dir: str, context_loaded: bool = False) -> None:
-    """Print welcome message."""
-    console.print(f"\n[bold cyan]DeepSeek Code[/bold cyan] v{version}")
-    console.print(f"Working directory: [path]{working_dir}[/path]")
+    """Print welcome message with ASCII art."""
+    # Print the banner
+    print_banner(version)
+
+    # Print status info
+    console.print(f"  [dim]Directory:[/dim] [path]{working_dir}[/path]")
     if context_loaded:
-        console.print("[success]Loaded context from DEEPSEEK.md[/success]")
+        console.print("  [dim]Context:[/dim]   [success]DEEPSEEK.md loaded[/success]")
+    console.print()
+    console.print("  [dim]Type[/dim] [bold]help[/bold] [dim]for commands,[/dim] [bold]quit[/bold] [dim]to exit[/dim]")
+    console.print()
+    console.print("[dim]─" * 50 + "[/dim]")
     console.print()
 
 
