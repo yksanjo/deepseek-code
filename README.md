@@ -12,6 +12,19 @@
   <img src="https://img.shields.io/badge/100%25-local%20first-green" alt="Local First">
 </p>
 
+```
+  ____                 ____            _
+ |  _ \  ___  ___ _ __/ ___|  ___  ___| | __
+ | | | |/ _ \/ _ \ '_ \___ \ / _ \/ _ \ |/ /
+ | |_| |  __/  __/ |_) |__) |  __/  __/   <
+ |____/ \___|\___| .__/____/ \___|\___|_|\_\
+   ____          |_|  _
+  / ___|___   __| | ___
+ | |   / _ \ / _` |/ _ \
+ | |__| (_) | (_| |  __/
+  \____\___/ \__,_|\___|
+```
+
 ---
 
 ## Why DeepSeek Code?
@@ -33,24 +46,69 @@
 | **Permission System** | Asks before dangerous operations |
 | **Conversation History** | Persists across sessions |
 
-## Quick Start
+## Installation
+
+### Option 1: Install from GitHub (Recommended)
 
 ```bash
-# Clone the repository
+# Clone and install in one go
 git clone https://github.com/yksanjo/deepseek-code.git
 cd deepseek-code
-
-# Install
 pip install -e .
-
-# Set your API key
-export DEEPSEEK_API_KEY=your_key_here
-
-# Run!
-deepseek-code
 ```
 
-Get your API key from [DeepSeek Platform](https://platform.deepseek.com/)
+### Option 2: Quick Install (One-liner)
+
+```bash
+pip install git+https://github.com/yksanjo/deepseek-code.git
+```
+
+### Setup API Key
+
+1. Get your API key from [DeepSeek Platform](https://platform.deepseek.com/)
+2. Add credits to your account (DeepSeek-V3 is very affordable!)
+3. Set the environment variable:
+
+```bash
+# Add to your shell profile (~/.bashrc, ~/.zshrc, etc.)
+export DEEPSEEK_API_KEY=your_key_here
+
+# Or create a .env file in your project
+echo "DEEPSEEK_API_KEY=your_key_here" > .env
+```
+
+### Launch
+
+```bash
+# Start interactive mode
+deepseek-code
+
+# Or use the short alias
+dsc
+```
+
+You should see:
+```
+  ____                 ____            _
+ |  _ \  ___  ___ _ __/ ___|  ___  ___| | __
+ | | | |/ _ \/ _ \ '_ \___ \ / _ \/ _ \ |/ /
+ | |_| |  __/  __/ |_) |__) |  __/  __/   <
+ |____/ \___|\___| .__/____/ \___|\___|_|\_\
+   ____          |_|  _
+  / ___|___   __| | ___
+ | |   / _ \ / _` |/ _ \
+ | |__| (_) | (_| |  __/
+  \____\___/ \__,_|\___|
+
+                    v0.1.0
+
+  Directory: /your/project
+  Type help for commands, quit to exit
+
+──────────────────────────────────────────────────
+
+>
+```
 
 ## Usage
 
