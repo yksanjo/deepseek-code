@@ -36,6 +36,22 @@ class Tool(ABC):
 
     def get_schema(self) -> dict[str, Any]:
         """Get the OpenAI-compatible tool schema."""
+        # Build properties without the 'required' field (it goes in the array, not in properties)
+        properties = {}
+        required = []
+
+        for param_name, param_config in self.parameters.items():
+            # Copy config but exclude 'required' key from properties
+            prop = {
+                "type": param_config["type"],
+                "description": param_config["description"],
+            }
+            properties[param_name] = prop
+
+            # Track required parameters separately
+            if param_config.get("required", False):
+                required.append(param_name)
+
         return {
             "type": "function",
             "function": {
@@ -43,10 +59,8 @@ class Tool(ABC):
                 "description": self.description,
                 "parameters": {
                     "type": "object",
-                    "properties": self.parameters,
-                    "required": [
-                        k for k, v in self.parameters.items() if v.get("required", False)
-                    ],
+                    "properties": properties,
+                    "required": required,
                 },
             },
         }
