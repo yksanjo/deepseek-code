@@ -6,6 +6,8 @@
 
 **An open-source AI coding assistant CLI powered by DeepSeek-V3** - Build your own "Claude Code" with DeepSeek's API.
 
+**开源 AI 编程助手命令行工具，由 DeepSeek-V3 驱动** - 使用 DeepSeek API 打造属于你自己的 "Claude Code"。
+
 <p align="center">
   <img src="https://img.shields.io/badge/2100+-lines%20of%20Python-blue" alt="Lines of Code">
   <img src="https://img.shields.io/badge/6-tools-orange" alt="Tools">
@@ -27,7 +29,33 @@
 
 ---
 
-## Why DeepSeek Code?
+## 为什么选择 DeepSeek Code? | Why DeepSeek Code?
+
+<details>
+<summary>🇨🇳 中文</summary>
+
+- **性价比高**: DeepSeek-V3 提供 GPT-4 级别的性能，成本仅为其一小部分
+- **开放架构**: 完全了解 AI 编程代理的工作原理，没有黑盒
+- **可扩展**: 添加自定义工具、修改代理循环、自由定制一切
+- **注重隐私**: 代码留在本地，只有提示词发送到 API
+
+### 主要功能
+
+| 功能 | 描述 |
+|------|------|
+| **交互式 REPL** | 实时与 AI 讨论你的代码 |
+| **文件操作** | 读取、写入、精准编辑文件 |
+| **Shell 命令** | 运行 bash 命令，带安全检查 |
+| **代码搜索** | 用 glob 查找文件，用 grep 搜索内容 |
+| **项目上下文** | 自动加载 `DEEPSEEK.md` 获取项目知识 |
+| **权限系统** | 危险操作前请求许可 |
+| **YOLO 模式** | 使用 `--yolo` 跳过所有提示（类似 Claude Code） |
+| **对话历史** | 跨会话保存 |
+
+</details>
+
+<details open>
+<summary>🇺🇸 English</summary>
 
 - **Cost-effective**: DeepSeek-V3 offers GPT-4 level performance at a fraction of the cost
 - **Open architecture**: Understand exactly how AI coding agents work - no black box
@@ -46,6 +74,8 @@
 | **Permission System** | Asks before dangerous operations |
 | **YOLO Mode** | Skip all prompts with `--yolo` (like Claude Code) |
 | **Conversation History** | Persists across sessions |
+
+</details>
 
 ## Installation
 
