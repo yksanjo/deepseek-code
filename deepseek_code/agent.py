@@ -17,6 +17,7 @@ class AgentConfig:
 
     max_turns: int = 50
     trust_mode: bool = False
+    yolo_mode: bool = False  # Skip all permission prompts (like Claude Code's --dangerously-skip-permissions)
     verbose: bool = False
 
 
@@ -34,7 +35,10 @@ class Agent:
         self.context = context
         self.config = config or AgentConfig()
         self.registry = registry or create_default_registry()
-        self.permissions = PermissionManager(trust_mode=self.config.trust_mode)
+        self.permissions = PermissionManager(
+            trust_mode=self.config.trust_mode,
+            yolo_mode=self.config.yolo_mode,
+        )
 
         # Build system prompt
         self.system_prompt = build_system_prompt(context)
@@ -222,6 +226,7 @@ def create_agent(
     model: str | None = None,
     working_dir: str = ".",
     trust_mode: bool = False,
+    yolo_mode: bool = False,
     max_turns: int = 50,
 ) -> Agent:
     """
@@ -232,6 +237,7 @@ def create_agent(
         model: Model to use (default: deepseek-chat)
         working_dir: Working directory
         trust_mode: Auto-approve safe operations
+        yolo_mode: Skip ALL permission prompts (dangerous!)
         max_turns: Maximum turns per task
 
     Returns:
@@ -241,6 +247,6 @@ def create_agent(
 
     client = DeepSeekClient(api_key=api_key, model=model)
     context = get_project_context(working_dir)
-    config = AgentConfig(max_turns=max_turns, trust_mode=trust_mode)
+    config = AgentConfig(max_turns=max_turns, trust_mode=trust_mode, yolo_mode=yolo_mode)
 
     return Agent(client=client, context=context, config=config)

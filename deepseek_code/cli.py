@@ -95,6 +95,7 @@ def create_and_run_agent(
     task: Optional[str],
     model: str,
     trust: bool,
+    yolo: bool,
     max_turns: int,
     verbose: bool,
     no_context: bool,
@@ -119,7 +120,7 @@ def create_and_run_agent(
         context_loaded = False
 
     # Print welcome
-    ui.print_welcome(__version__, context.working_dir, context_loaded)
+    ui.print_welcome(__version__, context.working_dir, context_loaded, yolo_mode=yolo)
 
     # Create agent
     try:
@@ -127,6 +128,7 @@ def create_and_run_agent(
         config = AgentConfig(
             max_turns=max_turns,
             trust_mode=trust,
+            yolo_mode=yolo,
             verbose=verbose,
         )
         agent = Agent(client=client, context=context, config=config)
@@ -164,6 +166,11 @@ def run(
         "--trust", "-t",
         help="Trust mode: auto-approve safe operations",
     ),
+    yolo: bool = typer.Option(
+        False,
+        "--dangerously-skip-permissions", "--yolo",
+        help="YOLO mode: skip ALL permission prompts (use with caution!)",
+    ),
     max_turns: int = typer.Option(
         50,
         "--max-turns",
@@ -187,8 +194,9 @@ def run(
         deepseek-code run
         deepseek-code run "Fix the bug in auth.py"
         deepseek-code run --trust "Run the tests"
+        deepseek-code run --yolo "Refactor the entire codebase"
     """
-    create_and_run_agent(task, model, trust, max_turns, verbose, no_context)
+    create_and_run_agent(task, model, trust, yolo, max_turns, verbose, no_context)
 
 
 @app.command()

@@ -58,14 +58,16 @@ class PermissionManager:
         "dd if=/dev/zero of=/dev/sda",
     ]
 
-    def __init__(self, trust_mode: bool = False):
+    def __init__(self, trust_mode: bool = False, yolo_mode: bool = False):
         """
         Initialize permission manager.
 
         Args:
             trust_mode: If True, auto-approve all non-blocked operations
+            yolo_mode: If True, skip ALL permission prompts (like Claude Code's --dangerously-skip-permissions)
         """
         self.trust_mode = trust_mode
+        self.yolo_mode = yolo_mode
         self.session_allowlist: set[str] = set()  # Patterns to auto-allow
         self.session_denylist: set[str] = set()  # Patterns to auto-deny
 
@@ -122,6 +124,26 @@ class PermissionManager:
 
         Returns a PermissionRequest indicating the required level.
         """
+        # YOLO mode: auto-approve everything except truly dangerous commands
+        if self.yolo_mode:
+            # Still check for blocked bash commands
+            if tool_name == "bash":
+                command = tool_input.get("command", "")
+                level, reason = self._check_bash_command(command)
+                if level == PermissionLevel.DENY:
+                    return PermissionRequest(
+                        tool_name=tool_name,
+                        tool_input=tool_input,
+                        level=level,
+                        reason=reason,
+                    )
+            # Auto-approve everything else in YOLO mode
+            return PermissionRequest(
+                tool_name=tool_name,
+                tool_input=tool_input,
+                level=PermissionLevel.AUTO,
+            )
+
         # Read-only operations are always safe
         if tool_name in ("read_file", "glob", "grep"):
             return PermissionRequest(

@@ -76,10 +76,18 @@ def print_banner(version: str) -> None:
     console.print()
 
 
-def print_welcome(version: str, working_dir: str, context_loaded: bool = False) -> None:
+def print_welcome(version: str, working_dir: str, context_loaded: bool = False, yolo_mode: bool = False) -> None:
     """Print welcome message with ASCII art."""
     # Print the banner
     print_banner(version)
+
+    # Print YOLO mode warning if enabled
+    if yolo_mode:
+        console.print()
+        console.print("[bold red]  ⚠️  YOLO MODE ENABLED ⚠️[/bold red]")
+        console.print("[yellow]  All permission prompts will be skipped![/yellow]")
+        console.print("[dim]  (Dangerous operations like rm -rf / are still blocked)[/dim]")
+        console.print()
 
     # Print status info
     console.print(f"  [dim]Directory:[/dim] [path]{working_dir}[/path]")
