@@ -231,11 +231,109 @@ def get_user_input(prompt: str = "> ") -> str:
         return ""
 
 
+class SwimmingWhale:
+    """Animated swimming whale for thinking indicator."""
+
+    # Whale frames (swimming animation)
+    WHALE_FRAMES = [
+        # Frame 1 - tail up
+        [
+            r"        .        ",
+            r'       ":"       ',
+            r'   ___:____     |"\/"|',
+            r"  ,'        `.    \  /",
+            r"  |  O        \___/  |",
+        ],
+        # Frame 2 - tail middle
+        [
+            r"                 ",
+            r"        .        ",
+            r'   ___:____     |"\/"|',
+            r"  ,'        `.    \  /",
+            r"  |  O        \___/  |",
+        ],
+        # Frame 3 - tail down
+        [
+            r"                 ",
+            r"        :        ",
+            r'   ___:____     |"\/"|',
+            r"  ,'        `.    \  /",
+            r"  |  O        \___/  |",
+        ],
+    ]
+
+    # Wave animation frames
+    WAVES = [
+        "~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~",
+        "^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^",
+        "~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~",
+        "^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^",
+    ]
+
+    # Bubble frames
+    BUBBLES = ["°", "o", "O", "o", "°", " "]
+
+    def __init__(self, width: int = 40):
+        self.width = width
+        self.position = 0
+        self.direction = 1  # 1 = right, -1 = left
+        self.frame = 0
+
+    def get_frame(self) -> Text:
+        """Get the current animation frame as Rich Text."""
+        whale_frame = self.WHALE_FRAMES[self.frame % len(self.WHALE_FRAMES)]
+        wave = self.WAVES[self.frame % len(self.WAVES)]
+        bubble = self.BUBBLES[self.frame % len(self.BUBBLES)]
+
+        # Calculate padding for swimming effect
+        padding = " " * self.position
+
+        # Build the frame
+        lines = []
+
+        # Add bubbles above whale
+        bubble_padding = " " * (self.position + 8)
+        lines.append(f"{bubble_padding}[dim]{bubble}[/dim]")
+
+        # Add whale body with padding
+        for line in whale_frame:
+            lines.append(f"[cyan]{padding}{line}[/cyan]")
+
+        # Add animated wave line (full width)
+        lines.append(f"[blue]{wave}[/blue]")
+
+        # Add thinking text
+        dots = "." * ((self.frame % 4) + 1)
+        lines.append(f"[dim]  Thinking{dots.ljust(4)}[/dim]")
+
+        return "\n".join(lines)
+
+    def update(self) -> None:
+        """Update animation state."""
+        self.position += self.direction
+
+        # Bounce off edges
+        max_pos = self.width - 24
+        if self.position >= max_pos:
+            self.direction = -1
+        elif self.position <= 0:
+            self.direction = 1
+
+        self.frame += 1
+
+    def __rich__(self) -> Text:
+        """Rich protocol for rendering."""
+        self.update()
+        return Text.from_markup(self.get_frame())
+
+
 def print_thinking() -> Live:
-    """Show a thinking spinner. Returns Live context to be used with 'with'."""
+    """Show a swimming whale while thinking. Returns Live context to be used with 'with'."""
+    whale = SwimmingWhale(width=35)
     return Live(
-        Spinner("dots", text="Thinking...", style="cyan"),
+        whale,
         console=console,
+        refresh_per_second=8,
         transient=True,
     )
 
