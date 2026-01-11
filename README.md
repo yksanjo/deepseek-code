@@ -44,6 +44,7 @@
 | **Code Search** | Find files with glob, search content with grep |
 | **Project Context** | Auto-loads `DEEPSEEK.md` for project-specific knowledge |
 | **Permission System** | Asks before dangerous operations |
+| **YOLO Mode** | Skip all prompts with `--yolo` (like Claude Code) |
 | **Conversation History** | Persists across sessions |
 
 ## Installation
@@ -159,12 +160,70 @@ deepseek-code version      # Show version
 deepseek-code run --help
 
 Options:
-  -m, --model TEXT      Model to use (deepseek-chat, deepseek-coder)
-  -t, --trust           Trust mode: auto-approve safe operations
-  --max-turns INTEGER   Maximum turns per task (default: 50)
-  -v, --verbose         Verbose output
-  --no-context          Don't load DEEPSEEK.md context
+  -m, --model TEXT                Model to use (deepseek-chat, deepseek-coder)
+  -t, --trust                     Trust mode: auto-approve safe operations
+  --yolo, --dangerously-skip-permissions
+                                  YOLO mode: skip ALL permission prompts
+  --max-turns INTEGER             Maximum turns per task (default: 50)
+  -v, --verbose                   Verbose output
+  --no-context                    Don't load DEEPSEEK.md context
 ```
+
+## Permission Controls
+
+DeepSeek Code has a flexible permission system similar to Claude Code. Choose your level of automation:
+
+### Default Mode (Recommended for beginners)
+```bash
+deepseek-code
+```
+- **Read operations**: Auto-approved (reading files, searching)
+- **Write operations**: Asks for permission each time
+- **Shell commands**: Asks for permission, blocks dangerous commands
+- **Option to "always" approve**: Type `a` or `always` when prompted to auto-approve similar operations
+
+### Trust Mode (`--trust` / `-t`)
+```bash
+deepseek-code run --trust "your task"
+```
+- Auto-approves **safe** write operations and shell commands
+- Still asks for potentially dangerous operations
+- Good for: Routine tasks in trusted projects
+
+### YOLO Mode (`--yolo` / `--dangerously-skip-permissions`)
+```bash
+# Full flag (like Claude Code)
+deepseek-code run --dangerously-skip-permissions "your task"
+
+# Short alias
+deepseek-code run --yolo "refactor entire codebase"
+```
+- **Skips ALL permission prompts** - maximum speed
+- Still blocks truly dangerous commands (`rm -rf /`, `sudo`, fork bombs)
+- Shows warning banner when enabled:
+  ```
+  ⚠️  YOLO MODE ENABLED ⚠️
+  All permission prompts will be skipped!
+  (Dangerous operations like rm -rf / are still blocked)
+  ```
+- Good for: Experienced users, trusted environments, rapid iteration
+
+### Permission Levels Summary
+
+| Mode | Flag | File Writes | Shell Commands | Dangerous Commands |
+|------|------|-------------|----------------|-------------------|
+| Default | (none) | Ask | Ask | Blocked |
+| Trust | `--trust` | Auto | Auto (safe) | Blocked |
+| YOLO | `--yolo` | Auto | Auto | Blocked |
+
+### Blocked Commands (Always)
+
+These are blocked in ALL modes for safety:
+- `rm -rf /` and similar destructive commands
+- `sudo` commands
+- Fork bombs
+- Direct disk writes (`dd if=/dev/zero of=/dev/sda`)
+- Piping untrusted content to shell (`curl ... | bash`)
 
 ## Tools
 
