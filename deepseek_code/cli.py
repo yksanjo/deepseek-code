@@ -61,7 +61,34 @@ def interactive_loop(agent: Agent) -> None:
                 continue
 
             if user_input.lower() == "help":
-                print_help()
+                print_help(agent)
+                continue
+
+            # Toggle YOLO mode
+            if user_input.lower() in ("/yolo", "yolo"):
+                agent.permissions.yolo_mode = not agent.permissions.yolo_mode
+                agent.config.yolo_mode = agent.permissions.yolo_mode
+                if agent.permissions.yolo_mode:
+                    console.print("[bold red]⚠️  YOLO MODE ENABLED ⚠️[/bold red]")
+                    console.print("[yellow]All permission prompts will be skipped![/yellow]")
+                else:
+                    console.print("[green]YOLO mode disabled.[/green]")
+                    console.print("[dim]Permission prompts are now active.[/dim]")
+                continue
+
+            # Toggle trust mode
+            if user_input.lower() in ("/trust", "trust"):
+                agent.permissions.trust_mode = not agent.permissions.trust_mode
+                agent.config.trust_mode = agent.permissions.trust_mode
+                if agent.permissions.trust_mode:
+                    console.print("[cyan]Trust mode enabled.[/cyan]")
+                else:
+                    console.print("[dim]Trust mode disabled.[/dim]")
+                continue
+
+            # Show current mode status
+            if user_input.lower() in ("/status", "status"):
+                print_status(agent)
                 continue
 
             # Process the message
@@ -76,19 +103,45 @@ def interactive_loop(agent: Agent) -> None:
             break
 
 
-def print_help() -> None:
+def print_help(agent: Agent) -> None:
     """Print help information."""
-    console.print("""
+    yolo_status = "[red]ON[/red]" if agent.permissions.yolo_mode else "[dim]off[/dim]"
+    trust_status = "[cyan]ON[/cyan]" if agent.permissions.trust_mode else "[dim]off[/dim]"
+
+    console.print(f"""
 [bold]Commands:[/bold]
   quit, exit, q  - Exit the program
   clear          - Clear conversation history
   help           - Show this help message
+
+[bold]Mode Commands:[/bold]
+  /yolo          - Toggle YOLO mode (currently {yolo_status})
+  /trust         - Toggle trust mode (currently {trust_status})
+  /status        - Show current mode status
 
 [bold]Tips:[/bold]
   - Ask the AI to read files before editing them
   - Use 'always' when prompted to auto-approve similar operations
   - Create a DEEPSEEK.md file in your project root for project-specific context
 """)
+
+
+def print_status(agent: Agent) -> None:
+    """Print current mode status."""
+    console.print("\n[bold]Current Status:[/bold]")
+
+    if agent.permissions.yolo_mode:
+        console.print("  YOLO Mode:  [bold red]ON[/bold red] (all prompts skipped)")
+    else:
+        console.print("  YOLO Mode:  [dim]off[/dim]")
+
+    if agent.permissions.trust_mode:
+        console.print("  Trust Mode: [cyan]ON[/cyan] (safe ops auto-approved)")
+    else:
+        console.print("  Trust Mode: [dim]off[/dim]")
+
+    console.print(f"  Model:      [blue]{agent.client.model}[/blue]")
+    console.print()
 
 
 def create_and_run_agent(
