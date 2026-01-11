@@ -134,7 +134,7 @@ class Agent:
 
     def run_turn(self, user_message: str | None = None) -> str | None:
         """
-        Run a single agent turn.
+        Run a single agent turn with streaming support.
 
         Args:
             user_message: Optional user message to add before the turn
@@ -152,9 +152,27 @@ class Agent:
         # Build messages for API
         messages = self.history.get_full_context()
 
-        # Call LLM
+        # Track if we've started streaming content
+        streaming_started = False
+
+        def on_content_chunk(chunk: str) -> None:
+            """Called for each streamed content chunk."""
+            nonlocal streaming_started
+            if not streaming_started:
+                streaming_started = True
+            ui.print_stream_chunk(chunk)
+
+        # Call LLM with streaming
         with ui.print_thinking():
-            response = self.client.chat(messages, tools=tool_schemas)
+            response = self.client.chat_stream(
+                messages,
+                tools=tool_schemas,
+                on_content=on_content_chunk,
+            )
+
+        # End the streaming line if we streamed content
+        if streaming_started:
+            ui.end_stream()
 
         # Add assistant message to history
         assistant_msg = self.client.format_assistant_message(response)
@@ -162,8 +180,7 @@ class Agent:
 
         # Check if done (no tool calls)
         if not response.has_tool_calls:
-            if response.content:
-                ui.print_assistant_message(response.content)
+            # Content was already streamed, just return it
             return response.content
 
         # Process tool calls

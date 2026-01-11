@@ -2,6 +2,7 @@
 
 import json
 from typing import Any
+from contextlib import contextmanager
 
 from rich.console import Console
 from rich.markdown import Markdown
@@ -106,6 +107,25 @@ def print_assistant_message(content: str) -> None:
         md = Markdown(content)
         console.print(md)
         console.print()
+
+
+_current_live: Live | None = None
+
+
+def print_stream_chunk(chunk: str) -> None:
+    """Print a streaming chunk of text (no newline, immediate flush)."""
+    global _current_live
+    # Stop the whale animation if it's running
+    if _current_live is not None:
+        _current_live.stop()
+        _current_live = None
+    print(chunk, end="", flush=True)
+
+
+def end_stream() -> None:
+    """End a streaming response (add newlines)."""
+    print()
+    print()
 
 
 def print_tool_call(tool_name: str, tool_input: dict[str, Any]) -> None:
@@ -327,15 +347,23 @@ class SwimmingWhale:
         return Text.from_markup(self.get_frame())
 
 
-def print_thinking() -> Live:
-    """Show a swimming whale while thinking. Returns Live context to be used with 'with'."""
+@contextmanager
+def print_thinking():
+    """Show a swimming whale while thinking. Context manager that tracks the Live object."""
+    global _current_live
     whale = SwimmingWhale(width=35)
-    return Live(
+    live = Live(
         whale,
         console=console,
         refresh_per_second=8,
         transient=True,
     )
+    _current_live = live
+    try:
+        with live:
+            yield
+    finally:
+        _current_live = None
 
 
 def print_token_usage(prompt_tokens: int, completion_tokens: int, total_tokens: int) -> None:

@@ -1,8 +1,9 @@
 """DeepSeek API client using OpenAI-compatible interface."""
 
 import os
+import json
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Generator, Callable
 
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageToolCall
@@ -64,8 +65,6 @@ class DeepSeekClient:
         if not tool_calls:
             return []
 
-        import json
-
         result = []
         for tc in tool_calls:
             try:
@@ -77,6 +76,24 @@ class DeepSeekClient:
                 ToolCall(
                     id=tc.id,
                     name=tc.function.name,
+                    arguments=args,
+                )
+            )
+        return result
+
+    def _parse_streaming_tool_calls(self, tool_call_chunks: list[dict]) -> list[ToolCall]:
+        """Parse accumulated tool call chunks into ToolCall objects."""
+        result = []
+        for tc in tool_call_chunks:
+            try:
+                args = json.loads(tc.get("arguments", "{}"))
+            except json.JSONDecodeError:
+                args = {"raw": tc.get("arguments", "")}
+
+            result.append(
+                ToolCall(
+                    id=tc.get("id", ""),
+                    name=tc.get("name", ""),
                     arguments=args,
                 )
             )
@@ -132,6 +149,86 @@ class DeepSeekClient:
             tool_calls=self._parse_tool_calls(message.tool_calls),
             finish_reason=choice.finish_reason or "stop",
             usage=usage,
+        )
+
+    def chat_stream(
+        self,
+        messages: list[dict[str, Any]],
+        tools: list[dict[str, Any]] | None = None,
+        temperature: float = 0.0,
+        max_tokens: int = 4096,
+        on_content: Callable[[str], None] | None = None,
+    ) -> LLMResponse:
+        """Send a streaming chat request to DeepSeek.
+
+        Args:
+            messages: List of message dicts with 'role' and 'content'
+            tools: Optional list of tool definitions in OpenAI format
+            temperature: Sampling temperature (0.0 = deterministic)
+            max_tokens: Maximum tokens in response
+            on_content: Callback function called with each content chunk
+
+        Returns:
+            LLMResponse with full content and/or tool calls
+        """
+        kwargs: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": True,
+        }
+
+        if tools:
+            kwargs["tools"] = tools
+            kwargs["tool_choice"] = "auto"
+
+        stream = self.client.chat.completions.create(**kwargs)
+
+        # Accumulate the response
+        full_content = ""
+        tool_call_chunks: dict[int, dict] = {}  # index -> {id, name, arguments}
+        finish_reason = "stop"
+
+        for chunk in stream:
+            if not chunk.choices:
+                continue
+
+            delta = chunk.choices[0].delta
+            finish_reason = chunk.choices[0].finish_reason or finish_reason
+
+            # Handle content streaming
+            if delta.content:
+                full_content += delta.content
+                if on_content:
+                    on_content(delta.content)
+
+            # Handle tool call streaming
+            if delta.tool_calls:
+                for tc_delta in delta.tool_calls:
+                    idx = tc_delta.index
+                    if idx not in tool_call_chunks:
+                        tool_call_chunks[idx] = {"id": "", "name": "", "arguments": ""}
+
+                    if tc_delta.id:
+                        tool_call_chunks[idx]["id"] = tc_delta.id
+                    if tc_delta.function:
+                        if tc_delta.function.name:
+                            tool_call_chunks[idx]["name"] = tc_delta.function.name
+                        if tc_delta.function.arguments:
+                            tool_call_chunks[idx]["arguments"] += tc_delta.function.arguments
+
+        # Parse accumulated tool calls
+        tool_calls = []
+        if tool_call_chunks:
+            sorted_chunks = [tool_call_chunks[i] for i in sorted(tool_call_chunks.keys())]
+            tool_calls = self._parse_streaming_tool_calls(sorted_chunks)
+
+        return LLMResponse(
+            content=full_content if full_content else None,
+            tool_calls=tool_calls,
+            finish_reason=finish_reason,
+            usage={},  # Streaming doesn't return usage in chunks
         )
 
     def format_tool_result(self, tool_call_id: str, result: str) -> dict[str, Any]:
