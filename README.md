@@ -51,6 +51,7 @@
 | **权限系统** | 危险操作前请求许可 |
 | **YOLO 模式** | 使用 `--yolo` 跳过所有提示（类似 Claude Code） |
 | **对话历史** | 跨会话保存 |
+| **多行输入** | 按 Ctrl+J 插入换行 |
 
 </details>
 
@@ -74,6 +75,7 @@
 | **Permission System** | Asks before dangerous operations |
 | **YOLO Mode** | Skip all prompts with `--yolo` (like Claude Code) |
 | **Conversation History** | Persists across sessions |
+| **Multiline Input** | Press Ctrl+J to insert newlines |
 
 </details>
 

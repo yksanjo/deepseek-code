@@ -8,6 +8,7 @@ import typer
 from dotenv import load_dotenv
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit.key_binding import KeyBindings
 from rich.console import Console
 
 from . import __version__
@@ -30,12 +31,26 @@ console = Console()
 
 
 def get_prompt_session() -> PromptSession:
-    """Create a prompt session with history."""
+    """Create a prompt session with history and multiline support."""
     history_dir = os.path.expanduser("~/.deepseek-code")
     os.makedirs(history_dir, exist_ok=True)
     history_file = os.path.join(history_dir, "prompt_history")
 
-    return PromptSession(history=FileHistory(history_file))
+    bindings = KeyBindings()
+
+    @bindings.add("enter")
+    def _(event):
+        event.current_buffer.validate_and_handle()
+
+    @bindings.add("c-j")
+    def _(event):
+        event.current_buffer.insert_text("\n")
+
+    return PromptSession(
+        history=FileHistory(history_file),
+        key_bindings=bindings,
+        multiline=True,
+    )
 
 
 def interactive_loop(agent: Agent) -> None:
@@ -120,6 +135,7 @@ def print_help(agent: Agent) -> None:
   /status        - Show current mode status
 
 [bold]Tips:[/bold]
+  - Ctrl+J inserts a newline (for multiline input)
   - Ask the AI to read files before editing them
   - Use 'always' when prompted to auto-approve similar operations
   - Create a DEEPSEEK.md file in your project root for project-specific context
