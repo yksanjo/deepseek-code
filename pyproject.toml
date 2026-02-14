@@ -1,14 +1,16 @@
 [project]
 name = "deepseek-code"
 version = "0.1.0"
-description = "AI coding assistant powered by DeepSeek-V3"
+description = "AI coding assistant powered by DeepSeek-V3 - Build your own Claude Code"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [
-    { name = "Your Name", email = "you@example.com" }
+    { name = "yksanjo", email = "yksanjo@example.com" }
 ]
-keywords = ["ai", "coding", "assistant", "deepseek", "cli"]
+keywords = ["ai", "coding", "assistant", "deepseek", "cli", "claude-code", "open-source"]
+homepage = "https://github.com/yksanjo/deepseek-code"
+repository = "https://github.com/yksanjo/deepseek-code"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",

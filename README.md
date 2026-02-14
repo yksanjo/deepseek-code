@@ -394,6 +394,17 @@ ruff check deepseek_code/
 | Cost | ~$0.14/M tokens | ~$15/M tokens | $20/mo | $10/mo |
 | Customizable | Fully | No | Limited | No |
 | Local LLM support | Planned | No | No | No |
+| Unit Tests | ✅ | ❌ | ❌ | ❌ |
+
+See [BENCHMARKS.md](BENCHMARKS.md) for detailed performance comparisons.
+
+## Demo & Screencasts
+
+Check out [DEMO_SCREENCAST.md](DEMO_SCREENCAST.md) for:
+- Quick demo commands
+- How to create GIF demos
+- Recommended demo scripts
+- Screencast recording tips
 
 ## Roadmap
 
