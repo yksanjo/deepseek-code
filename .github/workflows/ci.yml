@@ -1,0 +1,168 @@
+# GitHub Actions CI/CD Pipeline for deepseek-code
+# Runs on every push and pull request
+
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: |
+          pip install flake8 black isort
+          
+      - name: Run flake8
+        run: |
+          flake8 deepseek_code tests --max-line-length=100 --ignore=E501,W503
+          
+      - name: Run black check
+        run: |
+          black --check deepseek_code tests
+          
+      - name: Run isort check
+        run: |
+          isort --check-only deepseek_code tests
+
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: |
+          pip install mypy types-requests types-PyYAML
+          
+      - name: Run mypy
+        run: |
+          mypy deepseek_code --ignore-missing-imports
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]"
+          pip install pytest pytest-cov
+          
+      - name: Run tests
+        run: |
+          pytest tests/ -v --cov=deepseek_code --cov-report=xml
+          
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+
+  build-package:
+    name: Build Package
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          
+      - name: Install build dependencies
+        run: |
+          pip install build twine
+          
+      - name: Build package
+        run: |
+          python -m build
+          
+      - name: Check package
+        run: |
+          twine check dist/*
+
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: build-package
+    if: github.event_name == 'release' && github.event.action == 'published'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          
+      - name: Install build dependencies
+        run: |
+          pip install build twine
+          
+      - name: Build package
+        run: |
+          python -m build
+          
+      - name: Publish to PyPI
+        env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          twine upload dist/*
+
+  notify:
+    name: Notify
+    runs-on: ubuntu-latest
+    needs: [lint, type-check, test, build-package]
+    if: always()
+    
+    steps:
+      - name: Create status summary
+        run: |
+          echo "## CI Pipeline Status" >> $GITHUB_STEP_SUMMARY
+          echo "- Lint: ${{ needs.lint.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Type Check: ${{ needs.type-check.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Tests: ${{ needs.test.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Build Package: ${{ needs.build-package.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Timestamp: $(date)" >> $GITHUB_STEP_SUMMARY
