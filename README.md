@@ -1,91 +1,107 @@
-# deepseek-code
+# 🐟 deepseek-code
 
-Production-grade project scaffold focused on reliability, maintainability, and fast onboarding.
-
-[![CI](https://img.shields.io/github/actions/workflow/status/yksanjo/deepseek-code/ci.yml?branch=main&label=ci)](https://github.com/yksanjo/deepseek-code/actions)
-![License](https://img.shields.io/github/license/yksanjo/deepseek-code)
-![Last Commit](https://img.shields.io/github/last-commit/yksanjo/deepseek-code)
-![Repo Size](https://img.shields.io/github/repo-size/yksanjo/deepseek-code)
-
-## Detailed Description
-
-deepseek-code is maintained as an industry-grade software project with production-ready engineering practices.  
-This repository includes documented setup, quality gates, operational guidance, and governance standards so contributors can safely build, test, and ship changes with confidence.
-
-## Problem Statement
-
-Describe the user or business problem this project solves, the target users, and expected outcomes.
-
-## Solution Overview
-
-Summarize the architecture, core modules, and runtime behavior at a high level.
-
-## Key Features
-
-- Clear project scope and intended use.
-- Reproducible local development workflow.
-- Test coverage and CI quality gates.
-- Security and contribution policies.
-- Deployment-ready repository structure.
-
-## Repository Structure
-
-```text
-.
-|-- src/                  # Core implementation
-|-- tests/                # Automated test suites
-|-- docs/                 # Design notes and operational docs
-|-- .github/workflows/    # CI pipelines
-|-- README.md
-|-- LICENSE
-|-- CONTRIBUTING.md
-|-- SECURITY.md
-|-- CODE_OF_CONDUCT.md
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Git
-- Project runtime/toolchain for this repo
-
-### Local Setup
+> Open-source AI coding assistant CLI — your own Claude Code, ~1/100th the cost.
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt  # or: pip install -e .[dev]
-pytest
+pip install deepseek-code
+export DEEPSEEK_API_KEY=...
+dsc
 ```
 
-## Usage
+That's it. You're coding with an autonomous agent.
 
-Document primary commands, API routes, CLI examples, or UI workflows here.
+[![PyPI](https://img.shields.io/pypi/v/deepseek-code)](https://pypi.org/project/deepseek-code/)
+[![License](https://img.shields.io/github/license/yksanjo/deepseek-code)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/yksanjo/deepseek-code?style=social)](https://github.com/yksanjo/deepseek-code)
 
-## Quality Standards
+---
 
-- CI must pass before merge.
-- Changes require tests for critical behavior.
-- Security-sensitive changes should include risk notes.
-- Keep pull requests focused and reviewable.
+## Why
 
-## Security
+Claude Code is great. It also costs $20–$200/mo and locks you to one provider.
 
-See `SECURITY.md` for responsible disclosure and handling guidelines.
+**`deepseek-code` is the same idea, open-source, model-agnostic, and runs against any OpenAI-compatible endpoint** — DeepSeek, Qwen, Kimi, Together, Ollama, your own self-hosted model.
 
-## Contributing
+Typical session cost on DeepSeek-V3: **~$0.14**.
 
-See `CONTRIBUTING.md` for branching, commit, and pull request expectations.
+## Features
+
+- 🛠️ **Full tool use** — bash, file read/write, glob, grep
+- 🔐 **Permission prompts** — every dangerous action asks first (or `--yolo` to skip)
+- 💬 **Multi-turn conversation** — keeps context across the session
+- 🌍 **Multi-language UX** — English + Chinese READMEs and prompts
+- 🔄 **Provider-agnostic** — swap models with one env var
+- ⌨️ **Real terminal UX** — multiline input (Ctrl+J), history, syntax highlighting
+
+## Install
+
+```bash
+pip install deepseek-code
+```
+
+Or from source:
+
+```bash
+git clone https://github.com/yksanjo/deepseek-code
+cd deepseek-code
+pip install -e .
+```
+
+## Configure
+
+```bash
+export DEEPSEEK_API_KEY=your_key_here
+```
+
+## Use
+
+```bash
+dsc                              # interactive REPL in current directory
+dsc "fix the failing test"       # one-shot mode
+dsc --yolo "refactor utils.py"   # skip permission prompts (use with care)
+```
+
+## Switch models
+
+Anything OpenAI-compatible works. Set two env vars:
+
+| Provider | `DEEPSEEK_BASE_URL` | `DEEPSEEK_MODEL` |
+|---|---|---|
+| DeepSeek (default) | `https://api.deepseek.com` | `deepseek-chat` |
+| Qwen (Alibaba) | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-coder-plus` |
+| Kimi (Moonshot) | `https://api.moonshot.cn/v1` | `moonshot-v1-32k` |
+| Together AI | `https://api.together.xyz/v1` | `deepseek-ai/DeepSeek-V3` |
+| Ollama (local) | `http://localhost:11434/v1` | `qwen2.5-coder:32b` |
+
+Reuse `DEEPSEEK_API_KEY` for all of them (or set whatever the provider expects).
+
+## How it compares
+
+| | deepseek-code | Claude Code | Cursor | Aider |
+|---|---|---|---|---|
+| Cost / session | ~$0.14 | $20–$200 / mo | $20 / mo | varies |
+| Open source | ✅ | ❌ | ❌ | ✅ |
+| Model swap | ✅ any OpenAI-compat | ❌ | partial | ✅ |
+| Terminal-native | ✅ | ✅ | ❌ | ✅ |
+| MCP tools | 🚧 v0.2 | ✅ | ❌ | ❌ |
 
 ## Roadmap
 
-Track upcoming milestones, technical debt, and planned feature work.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full v0.2 plan. Highlights:
 
-## Support
+- `/load <path>` for explicit file context
+- Tab completion for file paths
+- `--model` flag (no env vars needed)
+- MCP tool support via [`mcp-discovery`](https://github.com/yksanjo/mcp-discovery) — bring 14k MCP servers into your terminal
+- `/cost` command — track cumulative session cost in real time
+- Status line — model, tokens, $ used
 
-Open a GitHub issue for bugs, feature requests, or documentation gaps.
+## Contributing
+
+PRs welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md). Small, focused PRs preferred.
+
+Active contributors: [@antenore](https://github.com/antenore)
 
 ## License
 
-This project is released under the MIT License.
+MIT.
