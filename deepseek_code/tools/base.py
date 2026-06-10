@@ -30,9 +30,13 @@ class Tool(ABC):
     permission_level: str = "ask"
 
     @abstractmethod
-    def execute(self, **kwargs) -> ToolResult:
-        """Execute the tool with given parameters."""
-        pass
+    def execute(self, *args: Any, **kwargs: Any) -> ToolResult:
+        """Execute the tool.
+
+        Each subclass defines its own typed keyword parameters matching the
+        JSON schema it declares in ``parameters``; calls are always dispatched
+        dynamically via ``execute(**arguments)``.
+        """
 
     def get_schema(self) -> dict[str, Any]:
         """Get the OpenAI-compatible tool schema."""
@@ -98,9 +102,9 @@ class ToolRegistry:
 
 def create_default_registry() -> ToolRegistry:
     """Create a registry with all default tools."""
-    from .file_tools import ReadFileTool, WriteFileTool, EditFileTool
-    from .search_tools import GlobTool, GrepTool
     from .bash_tool import BashTool
+    from .file_tools import EditFileTool, ReadFileTool, WriteFileTool
+    from .search_tools import GlobTool, GrepTool
 
     registry = ToolRegistry()
     registry.register(ReadFileTool())

@@ -1,9 +1,8 @@
 """Context management for project-specific configuration."""
 
-import os
 import subprocess
-from pathlib import Path
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass
@@ -111,7 +110,8 @@ def build_system_prompt(context: ProjectContext, tools_description: str = "") ->
     parts = []
 
     # Base instructions
-    parts.append("""You are DeepSeek Code, an AI coding assistant that helps with software development tasks.
+    parts.append(
+        """You are DeepSeek Code, an AI coding assistant that helps with software development tasks.
 
 You have access to tools that let you read files, write files, edit files, run commands, and search the codebase.
 
@@ -134,7 +134,8 @@ You have access to tools that let you read files, write files, edit files, run c
 - Ask for clarification if the task is ambiguous
 - If you're stuck, say so instead of guessing
 - Don't make unnecessary changes to files
-- Preserve existing code style and conventions""")
+- Preserve existing code style and conventions"""
+    )
 
     # Add working directory
     parts.append(f"\n## Working Directory\n{context.working_dir}")

@@ -11,12 +11,10 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.key_binding import KeyBindings
 from rich.console import Console
 
-from . import __version__
+from . import __version__, ui
 from .agent import Agent, AgentConfig
 from .context import get_project_context
 from .llm import DeepSeekClient
-from . import ui
-
 
 # Load environment variables from .env file
 load_dotenv()
@@ -227,17 +225,20 @@ def run(
     ),
     model: str = typer.Option(
         "deepseek-chat",
-        "--model", "-m",
+        "--model",
+        "-m",
         help="Model to use (deepseek-chat, deepseek-coder)",
     ),
     trust: bool = typer.Option(
         False,
-        "--trust", "-t",
+        "--trust",
+        "-t",
         help="Trust mode: auto-approve safe operations",
     ),
     yolo: bool = typer.Option(
         False,
-        "--dangerously-skip-permissions", "--yolo",
+        "--dangerously-skip-permissions",
+        "--yolo",
         help="YOLO mode: skip ALL permission prompts (use with caution!)",
     ),
     max_turns: int = typer.Option(
@@ -247,7 +248,8 @@ def run(
     ),
     verbose: bool = typer.Option(
         False,
-        "--verbose", "-v",
+        "--verbose",
+        "-v",
         help="Verbose output",
     ),
     no_context: bool = typer.Option(

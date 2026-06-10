@@ -1,7 +1,6 @@
 """Conversation history management."""
 
 import json
-import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -26,11 +25,13 @@ class ConversationHistory:
 
     def add_tool_result(self, tool_call_id: str, result: str) -> None:
         """Add a tool result message."""
-        self.messages.append({
-            "role": "tool",
-            "tool_call_id": tool_call_id,
-            "content": result,
-        })
+        self.messages.append(
+            {
+                "role": "tool",
+                "tool_call_id": tool_call_id,
+                "content": result,
+            }
+        )
 
     def add_tool_results(self, results: list[dict[str, Any]]) -> None:
         """Add multiple tool results."""
@@ -143,10 +144,12 @@ class ConversationStore:
             try:
                 with open(file_path, "r") as f:
                     data = json.load(f)
-                sessions.append({
-                    "id": file_path.stem,
-                    "timestamp": data.get("timestamp", "unknown"),
-                })
+                sessions.append(
+                    {
+                        "id": file_path.stem,
+                        "timestamp": data.get("timestamp", "unknown"),
+                    }
+                )
             except Exception:
                 continue
 

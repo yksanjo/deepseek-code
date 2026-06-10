@@ -59,3 +59,7 @@ target-version = ["py310"]
 line-length = 100
 target-version = "py310"
 select = ["E", "F", "I", "N", "W"]
+
+[tool.isort]
+profile = "black"
+line_length = 100

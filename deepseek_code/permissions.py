@@ -1,9 +1,9 @@
 """Permission system for tool execution."""
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 
 class PermissionLevel(Enum):
@@ -47,7 +47,7 @@ class PermissionManager:
         (r"\|\s*bash\s*$", "Piping to bash"),
         (r"curl.*\|\s*(sh|bash)", "Curl piping to shell"),
         (r"wget.*\|\s*(sh|bash)", "Wget piping to shell"),
-        (r":()\s*{\s*:\|:&\s*}", "Fork bomb"),
+        (r":\(\)\s*\{\s*:\|:&\s*\}", "Fork bomb"),
         (r"mkfs\.", "Filesystem format"),
     ]
 
@@ -111,14 +111,20 @@ class PermissionManager:
         return PermissionLevel.ASK, None
 
     def _matches_pattern(self, text: str, pattern: str) -> bool:
-        """Check if text matches a simple wildcard pattern."""
+        """Check if text matches a session rule pattern.
+
+        Supports the "cmd:*" convention (e.g. "ls:*" matches the bare
+        command or the command followed by arguments) plus simple
+        */? wildcards.
+        """
+        if pattern.endswith(":*"):
+            prefix = pattern[:-2]
+            return text == prefix or text.startswith(prefix + " ")
         # Convert simple wildcard pattern to regex
-        regex_pattern = pattern.replace("*", ".*").replace("?", ".")
+        regex_pattern = re.escape(pattern).replace(r"\*", ".*").replace(r"\?", ".")
         return bool(re.match(regex_pattern, text))
 
-    def check_permission(
-        self, tool_name: str, tool_input: dict[str, Any]
-    ) -> PermissionRequest:
+    def check_permission(self, tool_name: str, tool_input: dict[str, Any]) -> PermissionRequest:
         """
         Check what permission level is needed for a tool call.
 

@@ -1,7 +1,5 @@
 """Search tools: glob and grep."""
 
-import fnmatch
-import os
 import re
 from pathlib import Path
 
@@ -51,16 +49,12 @@ class GlobTool(Tool):
         "target",  # Rust
     }
 
-    def execute(
-        self, pattern: str, path: str = ".", limit: int = 100
-    ) -> ToolResult:
+    def execute(self, pattern: str, path: str = ".", limit: int = 100) -> ToolResult:
         try:
             base_path = Path(path).expanduser().resolve()
 
             if not base_path.exists():
-                return ToolResult(
-                    success=False, output="", error=f"Path not found: {path}"
-                )
+                return ToolResult(success=False, output="", error=f"Path not found: {path}")
 
             matches = []
 
@@ -86,8 +80,8 @@ class GlobTool(Tool):
             def get_mtime(p: str) -> float:
                 try:
                     return (base_path / p).stat().st_mtime
-                except:
-                    return 0
+                except OSError:
+                    return 0.0
 
             matches.sort(key=get_mtime, reverse=True)
 
@@ -164,13 +158,38 @@ class GrepTool(Tool):
 
     # Binary file extensions to skip
     BINARY_EXTENSIONS = {
-        ".png", ".jpg", ".jpeg", ".gif", ".ico", ".webp",
-        ".pdf", ".doc", ".docx", ".xls", ".xlsx",
-        ".zip", ".tar", ".gz", ".rar", ".7z",
-        ".exe", ".dll", ".so", ".dylib",
-        ".pyc", ".pyo", ".class",
-        ".woff", ".woff2", ".ttf", ".eot",
-        ".mp3", ".mp4", ".wav", ".avi", ".mov",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".gif",
+        ".ico",
+        ".webp",
+        ".pdf",
+        ".doc",
+        ".docx",
+        ".xls",
+        ".xlsx",
+        ".zip",
+        ".tar",
+        ".gz",
+        ".rar",
+        ".7z",
+        ".exe",
+        ".dll",
+        ".so",
+        ".dylib",
+        ".pyc",
+        ".pyo",
+        ".class",
+        ".woff",
+        ".woff2",
+        ".ttf",
+        ".eot",
+        ".mp3",
+        ".mp4",
+        ".wav",
+        ".avi",
+        ".mov",
     }
 
     def execute(
@@ -185,18 +204,14 @@ class GrepTool(Tool):
             base_path = Path(path).expanduser().resolve()
 
             if not base_path.exists():
-                return ToolResult(
-                    success=False, output="", error=f"Path not found: {path}"
-                )
+                return ToolResult(success=False, output="", error=f"Path not found: {path}")
 
             # Compile regex
             flags = re.IGNORECASE if ignore_case else 0
             try:
                 regex = re.compile(pattern, flags)
             except re.error as e:
-                return ToolResult(
-                    success=False, output="", error=f"Invalid regex pattern: {e}"
-                )
+                return ToolResult(success=False, output="", error=f"Invalid regex pattern: {e}")
 
             matches = []
 
@@ -228,11 +243,13 @@ class GrepTool(Tool):
                                 except ValueError:
                                     rel_path = file_path
 
-                                matches.append({
-                                    "file": str(rel_path),
-                                    "line": line_num,
-                                    "content": line.rstrip()[:200],  # Truncate long lines
-                                })
+                                matches.append(
+                                    {
+                                        "file": str(rel_path),
+                                        "line": line_num,
+                                        "content": line.rstrip()[:200],  # Truncate long lines
+                                    }
+                                )
 
                                 if len(matches) >= limit:
                                     break

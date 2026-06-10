@@ -1,32 +1,29 @@
 """Rich terminal UI components."""
 
 import json
-from typing import Any
 from contextlib import contextmanager
+from typing import Any
 
 from rich.console import Console
-from rich.markdown import Markdown
-from rich.panel import Panel
-from rich.prompt import Confirm, Prompt
-from rich.syntax import Syntax
-from rich.theme import Theme
-from rich.text import Text
 from rich.live import Live
-from rich.spinner import Spinner
-from rich.align import Align
-
+from rich.markdown import Markdown
+from rich.prompt import Prompt
+from rich.text import Text
+from rich.theme import Theme
 
 # Custom theme
-THEME = Theme({
-    "info": "cyan",
-    "warning": "yellow",
-    "error": "red bold",
-    "success": "green",
-    "tool": "blue",
-    "path": "magenta",
-    "logo": "bold cyan",
-    "logo.accent": "bold blue",
-})
+THEME = Theme(
+    {
+        "info": "cyan",
+        "warning": "yellow",
+        "error": "red bold",
+        "success": "green",
+        "tool": "blue",
+        "path": "magenta",
+        "logo": "bold cyan",
+        "logo.accent": "bold blue",
+    }
+)
 
 console = Console(theme=THEME)
 
@@ -77,7 +74,9 @@ def print_banner(version: str) -> None:
     console.print()
 
 
-def print_welcome(version: str, working_dir: str, context_loaded: bool = False, yolo_mode: bool = False) -> None:
+def print_welcome(
+    version: str, working_dir: str, context_loaded: bool = False, yolo_mode: bool = False
+) -> None:
     """Print welcome message with ASCII art."""
     # Print the banner
     print_banner(version)
@@ -95,7 +94,9 @@ def print_welcome(version: str, working_dir: str, context_loaded: bool = False, 
     if context_loaded:
         console.print("  [dim]Context:[/dim]   [success]DEEPSEEK.md loaded[/success]")
     console.print()
-    console.print("  [dim]Type[/dim] [bold]help[/bold] [dim]for commands,[/dim] [bold]quit[/bold] [dim]to exit[/dim]")
+    console.print(
+        "  [dim]Type[/dim] [bold]help[/bold] [dim]for commands,[/dim] [bold]quit[/bold] [dim]to exit[/dim]"
+    )
     console.print()
     console.print("[dim]─" * 50 + "[/dim]")
     console.print()
@@ -146,7 +147,7 @@ def print_tool_call(tool_name: str, tool_input: dict[str, Any]) -> None:
         old_preview = tool_input.get("old_str", "")[:50]
         console.print(f"{icon} [tool]edit_file[/tool]: [path]{path}[/path]")
         if old_preview:
-            console.print(f"   old: \"{old_preview}...\"")
+            console.print(f'   old: "{old_preview}..."')
     elif tool_name == "glob":
         pattern = tool_input.get("pattern", "")
         console.print(f"{icon} [tool]glob[/tool]: {pattern}")
@@ -210,7 +211,7 @@ def print_info(message: str) -> None:
     console.print(f"[info]{message}[/info]")
 
 
-def ask_permission(prompt: str, options: list[str] = None) -> str:
+def ask_permission(prompt: str, options: list[str] | None = None) -> str:
     """
     Ask user for permission.
 
@@ -299,8 +300,8 @@ class SwimmingWhale:
         self.direction = 1  # 1 = right, -1 = left
         self.frame = 0
 
-    def get_frame(self) -> Text:
-        """Get the current animation frame as Rich Text."""
+    def get_frame(self) -> str:
+        """Get the current animation frame as a Rich markup string."""
         whale_frame = self.WHALE_FRAMES[self.frame % len(self.WHALE_FRAMES)]
         wave = self.WAVES[self.frame % len(self.WAVES)]
         bubble = self.BUBBLES[self.frame % len(self.BUBBLES)]

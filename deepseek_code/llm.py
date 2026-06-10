@@ -1,13 +1,12 @@
 """DeepSeek API client using OpenAI-compatible interface."""
 
-import os
 import json
+import os
 from dataclasses import dataclass, field
-from typing import Any, Generator, Callable
+from typing import Any, Callable
 
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageToolCall
-from pydantic import BaseModel
 
 
 @dataclass

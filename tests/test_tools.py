@@ -4,10 +4,8 @@ import os
 import tempfile
 from pathlib import Path
 
-import pytest
-
-from deepseek_code.tools.base import ToolRegistry, ToolResult
-from deepseek_code.tools.file_tools import ReadFileTool, WriteFileTool, EditFileTool
+from deepseek_code.tools.base import ToolRegistry, create_default_registry
+from deepseek_code.tools.file_tools import EditFileTool, ReadFileTool, WriteFileTool
 from deepseek_code.tools.search_tools import GlobTool, GrepTool
 
 
@@ -19,7 +17,7 @@ class TestToolRegistry:
         registry = ToolRegistry()
         tool = ReadFileTool()
         registry.register(tool)
-        
+
         retrieved = registry.get(tool.name)
         assert retrieved is not None
         assert retrieved.name == tool.name
@@ -32,8 +30,8 @@ class TestToolRegistry:
 
     def test_list_tools(self):
         """All registered tools should be listable."""
-        registry = ToolRegistry()
-        tools = registry.list_tools()
+        registry = create_default_registry()
+        tools = registry.get_all()
         assert len(tools) > 0
 
 
@@ -42,14 +40,14 @@ class TestReadFileTool:
 
     def test_read_file_success(self):
         """Should successfully read a file."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("def hello():\n    print('hello')")
             temp_path = f.name
 
         try:
             tool = ReadFileTool()
             result = tool.execute(path=temp_path)
-            
+
             assert result.success is True
             assert "def hello" in result.output
         finally:
@@ -59,9 +57,10 @@ class TestReadFileTool:
         """Should handle file not found gracefully."""
         tool = ReadFileTool()
         result = tool.execute(path="/nonexistent/file.py")
-        
+
         assert result.success is False
-        assert "not found" in result.output.lower() or "error" in result.output.lower()
+        assert result.error is not None
+        assert "not found" in result.error.lower()
 
 
 class TestWriteFileTool:
@@ -71,26 +70,26 @@ class TestWriteFileTool:
         """Should successfully write to a file."""
         with tempfile.TemporaryDirectory() as tmpdir:
             file_path = os.path.join(tmpdir, "test.py")
-            
+
             tool = WriteFileTool()
             result = tool.execute(path=file_path, content="print('hello')")
-            
+
             assert result.success is True
             assert os.path.exists(file_path)
-            
+
             with open(file_path) as f:
                 assert f.read() == "print('hello')"
 
     def test_write_file_overwrite(self):
         """Should overwrite existing files when specified."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("old content")
             temp_path = f.name
 
         try:
             tool = WriteFileTool()
             result = tool.execute(path=temp_path, content="new content")
-            
+
             assert result.success is True
             with open(temp_path) as f:
                 assert f.read() == "new content"
@@ -103,18 +102,16 @@ class TestEditFileTool:
 
     def test_edit_file_success(self):
         """Should successfully edit a file."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("def hello():\n    print('hello')")
             temp_path = f.name
 
         try:
             tool = EditFileTool()
             result = tool.execute(
-                path=temp_path,
-                old="print('hello')",
-                new="print('world')"
+                path=temp_path, old_str="print('hello')", new_str="print('world')"
             )
-            
+
             assert result.success is True
             with open(temp_path) as f:
                 content = f.read()
@@ -125,18 +122,14 @@ class TestEditFileTool:
 
     def test_edit_file_no_match(self):
         """Should handle when old string is not found."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.py', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as f:
             f.write("def hello():\n    print('hello')")
             temp_path = f.name
 
         try:
             tool = EditFileTool()
-            result = tool.execute(
-                path=temp_path,
-                old="not found",
-                new="something else"
-            )
-            
+            result = tool.execute(path=temp_path, old_str="not found", new_str="something else")
+
             assert result.success is False
         finally:
             os.unlink(temp_path)
@@ -152,10 +145,10 @@ class TestGlobTool:
             Path(tmpdir, "test1.py").touch()
             Path(tmpdir, "test2.py").touch()
             Path(tmpdir, "readme.txt").touch()
-            
+
             tool = GlobTool()
             result = tool.execute(path=tmpdir, pattern="*.py")
-            
+
             assert result.success is True
             assert "test1.py" in result.output
             assert "test2.py" in result.output
@@ -169,10 +162,10 @@ class TestGlobTool:
             subdir = Path(tmpdir, "subdir")
             subdir.mkdir()
             Path(subdir, "nested.py").touch()
-            
+
             tool = GlobTool()
             result = tool.execute(path=tmpdir, pattern="**/*.py")
-            
+
             assert result.success is True
             assert "root.py" in result.output
             assert "nested.py" in result.output
@@ -186,11 +179,13 @@ class TestGrepTool:
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create test file
             test_file = Path(tmpdir, "test.py")
-            test_file.write_text("def hello():\n    return 'hello'\n\ndef world():\n    return 'world'")
-            
+            test_file.write_text(
+                "def hello():\n    return 'hello'\n\ndef world():\n    return 'world'"
+            )
+
             tool = GrepTool()
             result = tool.execute(pattern="def ", path=tmpdir)
-            
+
             assert result.success is True
             assert "hello" in result.output
             assert "world" in result.output
@@ -200,9 +195,9 @@ class TestGrepTool:
         with tempfile.TemporaryDirectory() as tmpdir:
             test_file = Path(tmpdir, "test.py")
             test_file.write_text("print('hello')")
-            
+
             tool = GrepTool()
             result = tool.execute(pattern="def ", path=tmpdir)
-            
+
             assert result.success is True
             # Should indicate no matches found

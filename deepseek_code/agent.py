@@ -1,14 +1,14 @@
 """Core agent loop implementation."""
 
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
-from .llm import DeepSeekClient, LLMResponse, ToolCall
-from .tools.base import ToolRegistry, ToolResult, create_default_registry
-from .permissions import PermissionManager, PermissionLevel, PermissionRequest
-from .conversation import ConversationHistory
-from .context import ProjectContext, build_system_prompt
 from . import ui
+from .context import ProjectContext, build_system_prompt
+from .conversation import ConversationHistory
+from .llm import DeepSeekClient, ToolCall
+from .permissions import PermissionLevel, PermissionManager, PermissionRequest
+from .tools.base import ToolRegistry, create_default_registry
 
 
 @dataclass
@@ -17,7 +17,9 @@ class AgentConfig:
 
     max_turns: int = 50
     trust_mode: bool = False
-    yolo_mode: bool = False  # Skip all permission prompts (like Claude Code's --dangerously-skip-permissions)
+    yolo_mode: bool = (
+        False  # Skip all permission prompts (like Claude Code's --dangerously-skip-permissions)
+    )
     verbose: bool = False
 
 
@@ -94,9 +96,7 @@ class Agent:
             return f"Error: Unknown tool '{tool_call.name}'"
 
         # Check permissions
-        perm_request = self.permissions.check_permission(
-            tool_call.name, tool_call.arguments
-        )
+        perm_request = self.permissions.check_permission(tool_call.name, tool_call.arguments)
 
         if not self._get_permission(perm_request):
             return "Permission denied by user."
@@ -124,11 +124,13 @@ class Agent:
             ui.print_tool_result(result, success=success)
 
             # Format for API
-            results.append({
-                "role": "tool",
-                "tool_call_id": tc.id,
-                "content": result,
-            })
+            results.append(
+                {
+                    "role": "tool",
+                    "tool_call_id": tc.id,
+                    "content": result,
+                }
+            )
 
         return results
 

@@ -1,6 +1,5 @@
 """File operation tools: read, write, edit."""
 
-import os
 from pathlib import Path
 
 from .base import Tool, ToolResult
@@ -75,7 +74,9 @@ class WriteFileTool(Tool):
     """Write content to a file (create or overwrite)."""
 
     name = "write_file"
-    description = "Write content to a file. Creates the file if it doesn't exist, overwrites if it does."
+    description = (
+        "Write content to a file. Creates the file if it doesn't exist, overwrites if it does."
+    )
     permission_level = "ask"  # Needs permission - modifies filesystem
 
     parameters = {
@@ -161,7 +162,7 @@ class EditFileTool(Tool):
                 return ToolResult(
                     success=False,
                     output="",
-                    error=f"String not found in file. Make sure old_str exactly matches the file content including whitespace.",
+                    error="String not found in file. Make sure old_str exactly matches the file content including whitespace.",
                 )
             if count > 1:
                 return ToolResult(

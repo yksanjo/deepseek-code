@@ -1,8 +1,6 @@
 """Bash command execution tool."""
 
 import subprocess
-import shlex
-from typing import Any
 
 from .base import Tool, ToolResult
 
